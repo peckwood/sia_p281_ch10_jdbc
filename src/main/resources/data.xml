@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+	xmlns:p="http://www.springframework.org/schema/p" xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc-3.1.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+	<context:component-scan base-package="jdbc.data"></context:component-scan>
+
+	<bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+		<property name="dataSource" ref="dataSource"></property>
+	</bean>
+
+	<beans profile="embeded-h2">
+		<!-- no need to specify class but it needs to be on classpath -->
+		<jdbc:embedded-database id="dataSource" type="H2">
+			<jdbc:script location="schema.sql" />
+		</jdbc:embedded-database>
+	</beans>
+
+	<beans profile="jdbc">
+		<bean id="dataSource"
+			class="org.springframework.jdbc.datasource.DriverManagerDataSource"
+			p:driverClassName="com.mysql.jdbc.Driver" p:url="jdbc:mysql://localhost:3307/sia_p281_ch10_jdbc"
+			p:username="raiden" p:password="raiden">
+		</bean>
+	</beans>
+	<beans profile="jdbc-simple">
+		<bean id="dataSource"
+			class="org.springframework.jdbc.datasource.SimpleDriverDataSource"
+			p:driverClass="com.mysql.jdbc.Driver" p:url="jdbc:mysql://localhost:3307/sia_p281_ch10_jdbc"
+			p:username="raiden" p:password="raiden">
+		</bean>
+	</beans>
+	<beans profile="jdbc-single-conn">
+		<bean id="dataSource"
+			class="org.springframework.jdbc.datasource.SingleConnectionDataSource"
+			p:driverClassName="com.mysql.jdbc.Driver" p:url="jdbc:mysql://localhost:3307/sia_p281_ch10_jdbc"
+			p:username="raiden" p:password="raiden">
+		</bean>
+	</beans>
+
+	<beans profile="pool-dbcp">
+		<bean id="dataSource" class="org.apache.commons.dbcp2.BasicDataSource">
+			<!-- sia_p281_ch10_jdbc is the database name -->
+			<property name="driverClassName" value="com.mysql.jdbc.Driver"></property>
+			<property name="url"
+				value="jdbc:mysql://localhost:3307/sia_p281_ch10_jdbc"></property>
+			<property name="username" value="raiden"></property>
+			<property name="password" value="raiden"></property>
+			<property name="initialSize" value="3"></property>
+		</bean>
+	</beans>
+	<beans profile="pool-c3p0">
+		<bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource"
+			destroy-method="close">
+			<property name="driverClass" value="com.mysql.jdbc.Driver"></property>
+			<property name="jdbcUrl"
+				value="jdbc:mysql://localhost:3307/sia_p281_ch10_jdbc"></property>
+			<property name="user" value="raiden"></property>
+			<property name="password" value="raiden"></property>
+			<property name="initialPoolSize" value="3"></property>
+		</bean>
+	</beans>
+	<beans profile="pool-druid">
+		<bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource" init-method="init" destroy-method="close">
+			<!-- druid doesn't need to know driver class name, it will find MySQL -->
+			<property name="url"
+				value="jdbc:mysql://localhost:3307/sia_p281_ch10_jdbc"></property>
+			<property name="username" value="raiden"></property>
+			<property name="password" value="raiden"></property>
+			<property name="initialSize" value="3"></property>
+			 <property name="minIdle" value="1" />
+			 <property name="maxActive" value="20" /> 
+			<property name="validationQuery" value="SELECT 'x'" />
+		</bean>
+	</beans>
+</beans>
